@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployed by Ansible</title>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #flashing-text {
+            font-size: 24px;
+            font-weight: bold;
+            animation: flashText 2s infinite;
+        }
+
+        @keyframes flashText {
+            0%, 10% {
+                color: red;
+            }
+            20%, 30% {
+                color: orange;
+            }
+            40%, 50% {
+                color: yellow;
+            }
+            60%, 70% {
+                color: green;
+            }
+            80%, 90% {
+                color: blue;
+            }
+            100% {
+                color: purple;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="flashing-text">
+        Deployed by Ansible - This is the Windows Web page
+    </div>
+</body>
+</html>

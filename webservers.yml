@@ -1,0 +1,81 @@
+--- ## Example linux/windows video
+- 
+  hosts: webservers
+  gather_facts: true
+  collections:
+   - ansible.windows
+   - ansible.posix
+
+  tasks:
+
+    - name: Deploying Webserver on RHEL Linux nodes
+      block: 
+        - name: Ensure a list of packages installed
+          ansible.builtin.dnf:
+           name:
+            - httpd
+            - httpd-tools
+           state: present
+          become: true
+        
+        - name: Copy specific index  ## Could be done better with a jinja template and facts
+          ansible.builtin.copy:
+            src: 'files/index.html.lin'
+            dest: /var/www/html/index.html
+
+          ## Set Selinux context if enabled - community.general collection needed
+
+        - name: Updating RHEL System
+          ansible.builtin.dnf:
+           name: "*"
+           state: latest
+         
+        - name: Allow ports 80 and 443 in firewall
+          ansible.posix.firewalld:
+           port: "{{ item }}"
+           permanent: yes
+           state: enabled
+          loop:
+           - 80/tcp
+           - 443/tcp
+          become: true
+        
+        - name: Enable and start httpd
+          ansible.builtin.service:
+            name: httpd
+            enabled: yes
+            state: started
+      become: true
+      when: ansible_os_family == 'RedHat'
+
+        ## Deployed on webserver thats in the windows domain
+
+    - name: Deploying webservers on Windows nodes
+      block:
+        - name: Update Windows nodes
+          ansible.windows.win_updates:
+           category_names:
+             - SecurityUpdates
+             - CriticalUpdates
+             - UpdateRollups
+
+        - name: Install IIS on Windows
+          ansible.windows.win_feature:
+           name:
+            - Web-Server
+            - Web-Common-Http
+           include_sub_features: true
+           include_management_tools: true
+           state: present
+          register: windows_update
+
+        - name: Copy website to document root
+          ansible.windows.win_copy:
+           src: "files/index.html.win"
+           dest: "C:\\inetpub\\wwwroot\\index.html"
+
+        - name: reboot host if required
+          win_reboot:
+          when: windows_update.reboot_required
+
+      when: ansible_os_family == 'Windows'
